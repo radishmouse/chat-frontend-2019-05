@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import ChatList from './ChatList';
 import ChatForm from './ChatForm';
+import qs from 'qs';
 
 class App extends React.Component {
 
@@ -39,12 +40,28 @@ class App extends React.Component {
     );
   }
 
-  _setText = () => {
+  _setText = (text) => {
     console.log('App _setText got called');
+    this.setState({
+      text
+    });
   }
 
-  _sendMessage = () => {
+  _sendMessage = async () => {    
     console.log('App _sendMessage got called');
+    await axios({
+      method: 'post',
+      url: '/api',
+      data: qs.stringify({
+        message: this.state.text
+      }), 
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    this.setState({
+      text: ''
+    })
   }
 }
 
