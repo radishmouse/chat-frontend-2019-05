@@ -11,19 +11,28 @@ class App extends React.Component {
     this.state = {
       messages: [],
       text: ''
-    };
-  }
+    };  }
 
   componentDidMount() {
 
-    setInterval(async () => {
-      const {data} = await axios.get('/api');
-      // console.log(data);
-      this.setState({
-        messages: data
-      });
-    }, 2000);
+    // setInterval(async () => {
+    //   const {data} = await axios.get('/api');
+    //   // console.log(data);
+    //   this.setState({
+    //     messages: data
+    //   });
+    // }, 2000);
+    // const { host } = window.location;
+    const url = `ws://localhost:31337/ws`;  // Sadly, the react proxy not playing well with websockets
+    this.connection = new WebSocket(url);
 
+    this.connection.onmessage = (e) => {
+      console.log(e);
+      console.log(e.data);
+      this.setState({
+        messages: JSON.parse(e.data)
+      });      
+    }
   }
 
   render() {
@@ -49,16 +58,17 @@ class App extends React.Component {
 
   _sendMessage = async () => {    
     console.log('App _sendMessage got called');
-    await axios({
-      method: 'post',
-      url: '/api',
-      data: qs.stringify({
-        message: this.state.text
-      }), 
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
+    this.connection.send(JSON.stringify({message: this.state.text}));
+    // await axios({
+    //   method: 'post',
+    //   url: '/api',
+    //   data: qs.stringify({
+    //     message: this.state.text
+    //   }), 
+    //   headers: {
+    //     'Content-Type': 'application/x-www-form-urlencoded'
+    //   }
+    // });
     this.setState({
       text: ''
     })
