@@ -16,13 +16,29 @@ class App extends React.Component {
 
   componentDidMount() {
 
-    setInterval(async () => {
-      const {data} = await axios.get('/api');
-      // console.log(data);
-      this.setState({
-        messages: data
-      });
-    }, 2000);
+    const url = 'ws://localhost:31337/chat'; // can't use the CRA proxy because of a bug
+    this.connection = new WebSocket(url);
+
+    this.connection.onmessage = (e) => {
+      console.log(e.data);
+      if (this.state.messages.length === 0) {
+        this.setState({
+          messages: JSON.parse(e.data)
+        });
+      } else {
+        this.setState({
+          messages: [...this.state.messages, JSON.parse(e.data)]
+        });
+      }
+    };
+
+    // setInterval(async () => {
+    //   const {data} = await axios.get('/api');
+    //   // console.log(data);
+    //   this.setState({
+    //     messages: data
+    //   });
+    // }, 2000);
 
   }
 
