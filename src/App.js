@@ -16,20 +16,25 @@ class App extends React.Component {
 
   componentDidMount() {
 
-    const url = 'ws://localhost:31337/chat'; // can't use the CRA proxy because of a bug
+    const url = 'ws://radishmouse.local:31337/chat'; // can't use the CRA proxy because of a bug
     this.connection = new WebSocket(url);
 
     this.connection.onmessage = (e) => {
       console.log(e.data);
-      if (this.state.messages.length === 0) {
-        this.setState({
-          messages: JSON.parse(e.data)
-        });
-      } else {
-        this.setState({
-          messages: [...this.state.messages, JSON.parse(e.data)]
-        });
-      }
+      const newData = JSON.parse(e.data);
+      this.setState({
+        messages: this.state.messages.concat(newData) // .concat will handle both arrays
+                                                      // and individual messages
+      });      
+      // if (this.state.messages.length === 0) {
+      //   this.setState({
+      //     messages: JSON.parse(e.data)
+      //   });
+      // } else {
+      //   this.setState({
+      //     messages: [...this.state.messages, JSON.parse(e.data)]
+      //   });
+      // }
     };
 
     // setInterval(async () => {
@@ -65,16 +70,19 @@ class App extends React.Component {
 
   _sendMessage = async () => {    
     console.log('App _sendMessage got called');
-    await axios({
-      method: 'post',
-      url: '/api',
-      data: qs.stringify({
-        message: this.state.text
-      }), 
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
+    this.connection.send(JSON.stringify({
+      message: this.state.text
+    }));
+    // await axios({
+    //   method: 'post',
+    //   url: '/api',
+    //   data: qs.stringify({
+    //     message: this.state.text
+    //   }), 
+    //   headers: {
+    //     'Content-Type': 'application/x-www-form-urlencoded'
+    //   }
+    // });
     this.setState({
       text: ''
     })
